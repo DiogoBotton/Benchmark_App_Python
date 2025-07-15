@@ -4,7 +4,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import tempfile
 
-def generate_pdf(benchmark_data, df_comparativo, output_path="benchmark_report.pdf"):
+def generate_pdf(benchmark_data, df_comparativo):
     # Caminho do executável responsável pela conversão de HTML para PDF
     wkhtml_path = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
 
@@ -26,7 +26,10 @@ def generate_pdf(benchmark_data, df_comparativo, output_path="benchmark_report.p
     )
 
     # Gera PDF temporário
-    #tmp_file = tempfile.NamedTemporaryFile(delete=True, suffix=".pdf")
-    pdfkit.from_string(html, output_path, configuration=config)
-    #pdfkit.from_string(html, tmp_file.name, configuration=config)
-    return output_path
+    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    tmp_file.close()
+
+    pdfkit.from_string(html, tmp_file.name, configuration=config)
+
+    # Retorna o caminho do arquivo temporário
+    return tmp_file.name

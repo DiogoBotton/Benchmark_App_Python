@@ -4,6 +4,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import os
 from sqlalchemy.orm import Session
 from utils.parser import parse_postman_json
 from db.models import Benchmark, BenchmarkResult, BenchmarkTime, init_db
@@ -208,3 +209,6 @@ if st.button("📄 Gerar relatório em PDF"):
             file_name="relatorio.pdf",
             mime="application/pdf"
         )
+    
+    # Remove o arquivo temporário
+    os.remove(pdf_path)
