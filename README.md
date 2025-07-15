@@ -3,6 +3,12 @@ Projeto para exibição de dados de benchmark de API's gerados pelo Postman Runn
 
 ### Requisitos:
 
+Realizar a instalação da biblioteca *pdfkit*.
+
+```bash
+    pip install pdfkit
+```
+
 Além da necessidade da instalação das bibliotecas que estão dentro do requirements.txt, é necessário realizar o download de um executável chamado *wkhtmltopdf*.
 Este executável é responsável pela conversão do template HTML para PDF.
 
@@ -12,4 +18,17 @@ Também talvez será necessário alterar o caminho de onde foi instalado o wkhtm
 
 ```py
     wkhtml_path = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+```
+
+**OBS:**
+
+Também há uma implementação de geração de relatório com a biblioteca *weasyprint*, porém precisará de baixar o seguinte runtime:
+
+[GTK for Windows Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases)
+
+E realizar as seguintes instalações de bibliotecas python:
+
+```bash
+    pip install weasyprint
+    pip install cairocffi
 ```

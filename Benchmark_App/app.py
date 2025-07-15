@@ -10,7 +10,7 @@ from utils.parser import parse_postman_json
 from db.models import Benchmark, BenchmarkResult, BenchmarkTime, init_db
 from db.database import get_db
 from db.enums import Semaphore
-from utils.report import generate_pdf
+from utils.report_wkhtmltopdf import generate_pdf
 
 TIME_OK = 5
 TIME_WARNING = (5, 10)
