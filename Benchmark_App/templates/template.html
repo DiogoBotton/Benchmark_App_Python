@@ -1,48 +1,150 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: sans-serif; }
-        h2 { margin-top: 30px; }
+        body {
+            font-family: sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
             margin-bottom: 40px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ccc;
             padding: 6px 12px;
             text-align: center;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
+        /* Legenda início */
+        .legend {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .legend td {
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        .legend-item.ok {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .legend-item.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .legend-item.critical {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+
+        /* Legenda fim */
+
+        /*  Semáforo inicio 
+            (precisa ter o mesmo valor que irá vir em string dos dados, pois define a cor baseado no valor da célula)
+        */
+
+        td.ok {
+            background-color: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        td.atenção {
+            background-color: #fff3cd;
+            color: #856404;
+            font-weight: bold;
+        }
+
+        td.crítico {
+            background-color: #f8d7da;
+            color: #721c24;
+            font-weight: bold;
+        }
+
+        /* Semáforo fim */
     </style>
 </head>
+
 <body>
     <h1>Relatório de Benchmark</h1>
 
+    <h2 style="margin-top: 20px;">Legenda</h2>
+    <table class="legend">
+        <tr>
+            <td class="legend-item ok">
+                <strong>OK</strong><br>
+                <span>Menor que 5s</span>
+            </td>
+            <td class="legend-item warning">
+                <strong>ATENÇÃO</strong><br>
+                <span>Entre 5s e 10s</span>
+            </td>
+            <td class="legend-item critical">
+                <strong>CRÍTICO</strong><br>
+                <span>Maior que 10s</span>
+            </td>
+        </tr>
+    </table>
+
     {% for teste in benchmarks %}
-        <h2>{{ teste.nome }}</h2>
-        <table>
-            <thead>
-                <tr>
-                    {% for col in teste.df.columns %}
-                        <th>{{ col }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in teste.df.values %}
-                    <tr>
-                        {% for cell in row %}
-                            <td>{{ cell }}</td>
-                        {% endfor %}
-                    </tr>
+    <h2>{{ teste.nome }}</h2>
+    <table>
+        <thead>
+            <tr>
+                {% for col in teste.df.columns %}
+                <th>{{ col }}</th>
                 {% endfor %}
-            </tbody>
-        </table>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in teste.df.values %}
+            <tr>
+                {% for col_index in range(row | length) %}
+                {% set cell = row[col_index] %}
+                {% set col_name = teste.df.columns[col_index] %}
+
+                {% if col_name == 'Semáforo' %}
+                <td class="{{ cell | lower }}">{{ cell }}</td>
+                {% else %}
+                <td>{{ cell }}</td>
+                {% endif %}
+                {% endfor %}
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endfor %}
 
     <h2>Comparativo entre testes (Tempo Médio por Requisição)</h2>
@@ -51,20 +153,21 @@
             <tr>
                 <th>Requisição</th>
                 {% for col in comparativo.columns %}
-                    <th>{{ col }}</th>
+                <th>{{ col }}</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for idx, row in comparativo.iterrows() %}
-                <tr>
-                    <td>{{ idx }}</td>
-                    {% for val in row.values %}
-                        <td>{{ "%.2f"|format(val) if val else "-" }}</td>
-                    {% endfor %}
-                </tr>
+            <tr>
+                <td>{{ idx }}</td>
+                {% for val in row.values %}
+                <td>{{ "%.2f"|format(val) if val else "-" }}</td>
+                {% endfor %}
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </body>
+
 </html>

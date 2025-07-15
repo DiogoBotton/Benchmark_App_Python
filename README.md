@@ -32,3 +32,11 @@ E realizar as seguintes instalações de bibliotecas python:
     pip install weasyprint
     pip install cairocffi
 ```
+
+#### Atenção:
+
+O *pdfkit* utiliza como dependência o executável *wkhtmltopdf*. Infelizmente é baseado em uma versão antiga do Webkit e não possui suporte para muitos recursos modernos de CSS e Js, como por exemplo, o **flexbox**.
+
+Caso seja necessário, você pode procurar por outras alternativas ao *wkhtmltopdf*, como por exemplo, o *weasyprint*.
+
+Fonte: [Python HTML to PDF Libs](https://docraptor.com/python-html-to-pdf)
