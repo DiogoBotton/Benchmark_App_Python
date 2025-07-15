@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: sans-serif; }
+        h2 { margin-top: 30px; }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Relatório de Benchmark</h1>
+
+    {% for teste in benchmarks %}
+        <h2>{{ teste.nome }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    {% for col in teste.df.columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in teste.df.values %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+
+    <h2>Comparativo entre testes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Requisição</th>
+                {% for col in comparativo.columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for idx, row in comparativo.iterrows() %}
+                <tr>
+                    <td>{{ idx }}</td>
+                    {% for val in row.values %}
+                        <td>{{ "%.2f"|format(val) if val else "-" }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
