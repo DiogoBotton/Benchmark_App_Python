@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import os
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
 from utils.parser import parse_postman_json
 from db.models import Benchmark, BenchmarkResult, BenchmarkTime, init_db
 from db.database import get_db
@@ -16,7 +17,13 @@ TIME_OK = 5
 TIME_WARNING = (5, 10)
 
 db: Session = next(get_db())
-benchmarks = db.query(Benchmark).all()
+
+def get_benchmarks_from_db():
+    return db.query(Benchmark).options(
+        selectinload(Benchmark.results).selectinload(BenchmarkResult.times)
+    ).all()
+
+benchmarks = get_benchmarks_from_db()
 
 # Função de modal para exclusão de teste
 @st.dialog("Painel de confirmação de exclusão")
@@ -57,32 +64,27 @@ def build_metrics_dataframe(benchmark, include_semaphore=True):
         for t in result.times:
             rows.append({
                 "Requisição": result.request_name,
-                "Tempo (segundos)": round(t.time / 1000, 2)
+                "Tempo (s)": round(t.time / 1000, 2)
             })
 
     if not rows:
         return None
 
     df = pd.DataFrame(rows)
-    metrics = df.groupby(["Requisição"])["Tempo (segundos)"].agg(["mean", "min", "max", "count"]).reset_index()
-    metrics = metrics.rename(columns={
-        "mean": "Tempo médio",
-        "min": "Tempo mínimo",
-        "max": "Tempo máximo",
-        "count": "Qtd. Requisições"
-    })
+    metrics = df.groupby(["Requisição"])["Tempo (s)"].agg(["mean", "min", "max", "count"]).reset_index()
 
     # Arredondamento para 2 casas
-    for col in ["Tempo médio", "Tempo mínimo", "Tempo máximo"]:
+    for col in ["mean", "min", "max"]:
         metrics[col] = metrics[col].round(2)
 
     # Adiciona coluna de semáforo
     conditions = [
-        metrics["Tempo médio"] <= TIME_OK,
-        (metrics["Tempo médio"] > TIME_WARNING[0]) & (metrics["Tempo médio"] <= TIME_WARNING[1]),
-        metrics["Tempo médio"] > TIME_WARNING[1]
+        metrics["mean"] <= TIME_OK,
+        (metrics["mean"] > TIME_WARNING[0]) & (metrics["mean"] <= TIME_WARNING[1]),
+        metrics["mean"] > TIME_WARNING[1]
     ]
 
+    # Verificação para adicionar semáforo (pois html/pdf não é compatível com emojis)
     if include_semaphore:
         values = [
             Semaphore.OK.value,
@@ -92,7 +94,16 @@ def build_metrics_dataframe(benchmark, include_semaphore=True):
     else:
         values = ["OK", "ATENÇÃO", "CRÍTICO"]
     
+    # Adiciona o semáfaro (com ou sem emojis)
     metrics["Semáforo"] = np.select(conditions, values, default=Semaphore.CRITICAL)
+
+    # Renomeia as colunas
+    metrics = metrics.rename(columns={
+        "mean": "Tempo médio (s)",
+        "min": "Tempo mínimo (s)",
+        "max": "Tempo máximo (s)",
+        "count": "Qtd. Requisições (s)"
+    })
 
     return metrics
 
@@ -147,6 +158,7 @@ if submit and uploaded_file and test_name:
 
             db.commit()
             st.success("✅ Teste armazenado com sucesso!")
+            st.rerun()
         except Exception as e:
             st.error(f"Erro ao processar JSON: {e}")
 
@@ -182,13 +194,13 @@ for b in benchmarks:
             avg_time = sum(tempos) / len(tempos)
             comparative_rows.append({
                 "Requisição": result.request_name,
-                "Teste": b.test_name,
-                "Tempo médio (segundos)": round(avg_time / 1000, 2)
+                "Teste":  f'{b.test_name} (s)',
+                "Tempo médio (s)": round(avg_time / 1000, 2)
             })
 
 if comparative_rows:
     df_comparativo = pd.DataFrame(comparative_rows)
-    df_pivot = df_comparativo.pivot_table(index="Requisição", columns="Teste", values="Tempo médio (segundos)")
+    df_pivot = df_comparativo.pivot_table(index="Requisição", columns="Teste", values="Tempo médio (s)")
 
     mean_by_test = df_pivot.mean().sort_values()
     df_pivot = df_pivot[mean_by_test.index]
