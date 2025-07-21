@@ -22,7 +22,8 @@ def generate_pdf(benchmark_data, df_comparativo):
     # Renderiza o HTML
     html = template.render(
         benchmarks=benchmark_data,
-        comparativo=df_comparativo
+        comparativo=df_comparativo,
+        tempoReferencia="Tempo médio"
     )
 
     # Gera PDF temporário

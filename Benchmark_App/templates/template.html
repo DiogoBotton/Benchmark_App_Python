@@ -13,7 +13,8 @@
         }
 
         h2 {
-            margin-top: 30px;
+            margin-top: 50px;
+            margin-bottom: 30px;
         }
 
         table {
@@ -99,7 +100,9 @@
 <body>
     <h1>Relatório de Benchmark</h1>
 
-    <h2 style="margin-top: 20px;">Legenda</h2>
+    <h2>Legenda</h2>
+    
+    <p>Tempo de referência: {{ tempoReferencia }}</p>
     <table class="legend">
         <tr>
             <td class="legend-item ok">
@@ -149,25 +152,37 @@
 
     <h2>Comparativo entre testes (Tempo Médio por Requisição)</h2>
     <table>
-        <thead>
-            <tr>
-                <th>Requisição</th>
-                {% for col in comparativo.columns %}
-                <th>{{ col }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for idx, row in comparativo.iterrows() %}
-            <tr>
-                <td>{{ idx }}</td>
-                {% for val in row.values %}
-                <td>{{ "%.2f"|format(val) if val else "-" }}</td>
-                {% endfor %}
-            </tr>
+    <thead>
+        <tr>
+            <th>Requisição</th>
+            {% for col in comparativo.columns %}
+            <th>{{ col }}</th>
             {% endfor %}
-        </tbody>
-    </table>
+        </tr>
+    </thead>
+    <tbody>
+        {% for idx, row in comparativo.iterrows() %}
+        <tr>
+            <td>{{ idx }}</td>
+            {% for val in row.values %}
+                {% set cell_class = '' %}
+                {% if val is not none %}
+                    {% if val < 5 %}
+                        {% set cell_class = 'ok' %}
+                    {% elif val < 10 %}
+                        {% set cell_class = 'atenção' %}
+                    {% else %}
+                        {% set cell_class = 'crítico' %}
+                    {% endif %}
+                {% endif %}
+                <td class="{{ cell_class }}">
+                    {{ "%.2f"|format(val) if val is not none else "-" }}
+                </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 </body>
 
 </html>
